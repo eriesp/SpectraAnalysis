@@ -147,7 +147,13 @@ for(i in 1:10) {
   vul.refl.last[i]=vul.refl[714,i]
 }
 
-temp.emis=
+temp.emis.srp = c(rep(150,6), rep(300,6), rep(450,6), rep(600,5))
+temp.emis.vul = c(rep(150,5), rep(300,5), rep(450,5), rep(600,5))
+temp.emis = c(temp.emis.srp, temp.emis.vul)
+
+temp.refl.srp = rep(c(20,500), 6)
+temp.refl.vul = rep(c(20,500), 5)
+temp.refl = c(temp.refl.srp, temp.refl.vul)
 
 dummy.srp.emis=numeric(23)
 dummy.srp.emis[19:23]=1
@@ -209,7 +215,7 @@ plot(dummy.emis, silica.emis)
 points(dummy.srp.emis, silica.srp.emis, col='red', pch=19)
 points(dummy.vul.emis, silica.vul.emis, col='blue', pch=19)
 
-scatterplotMatrix(data.frame(silica.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.last))
+scatterplotMatrix(data.frame(silica.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.last,temp.emis))
 
 
 x11()
@@ -233,7 +239,7 @@ plot(dummy.refl, silica.refl)
 points(dummy.srp.refl, silica.srp.refl, col='red', pch=19)
 points(dummy.vul.refl, silica.vul.refl, col='blue', pch=19)
 
-scatterplotMatrix(data.frame(silica.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.last))
+scatterplotMatrix(data.frame(silica.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.last,temp.refl))
 
 
 x11()
@@ -257,7 +263,7 @@ plot(dummy.emis, alcali.emis)
 points(dummy.srp.emis, alcali.srp.emis, col='red', pch=19)
 points(dummy.vul.emis, alcali.vul.emis, col='blue', pch=19)
 
-scatterplotMatrix(data.frame(alcali.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.last))
+scatterplotMatrix(data.frame(alcali.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.last,temp.emis))
 
 
 x11()
@@ -281,7 +287,7 @@ plot(dummy.refl, alcali.refl)
 points(dummy.srp.refl, alcali.srp.refl, col='red', pch=19)
 points(dummy.vul.refl, alcali.vul.refl, col='blue', pch=19)
 
-scatterplotMatrix(data.frame(alcali.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.last))
+scatterplotMatrix(data.frame(alcali.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.last,temp.refl))
 
 ################################################################################
 
@@ -315,7 +321,7 @@ abline(a=0, b=0)
 abline(v=23.5)
 
 ### GAM for emissivity explaining alcali ### NOT GOOD ENOUGH 
-
+ 
 alcali.emis.gam = gam(alcali.emis ~ s(emis.CF, bs='cr') + s(emis.CFval, bs='cr') + s(emis.TF, bs='cr') + s(emis.TFval, bs='cr'))
 summary(alcali.emis.gam)
 
@@ -394,3 +400,720 @@ points(silica.emis.gam.reduced$fitted.values, alcali.emis.gam$fitted.values, col
 x11()
 plot(silica.refl, alcali.refl, col='green', pch=19)
 points(silica.refl.gam$fitted.values, alcali.refl.gam$fitted.values, col='red', pch=4)
+
+################################################################################
+
+### More diagnostic on the model: effect of temperature on features ###
+
+i150.emis=c(seq(1,6), seq(24,28))
+i300.emis=c(seq(7,12), seq(29,33))
+i450.emis=c(seq(13,18), seq(34,38))
+i600.emis=c(seq(19,23), seq(39,43))
+
+i20.refl=seq(1,22,2)
+i500.refl=seq(2,22,2)
+
+### Christiansen Feature
+
+x11()
+par(mfrow=c(1,2))
+plot(temp.emis, emis.CF)
+plot(temp.refl, refl.CF)
+
+box.CF=boxplot(emis.CF[i150.emis], emis.CF[i300.emis], emis.CF[i450.emis], emis.CF[i600.emis]) ### clear differences
+boxplot(refl.CF[i20.refl], refl.CF[i500.refl]) ### same
+
+
+### TEST 1: JUST USE MEAN
+m150.CF=mean(emis.CF[i150.emis])
+m300.CF=mean(emis.CF[i300.emis])
+m450.CF=mean(emis.CF[i450.emis])
+m600.CF=mean(emis.CF[i600.emis])
+T01.CF=abs(m150.CF-m300.CF)
+T02.CF=abs(m150.CF-m450.CF)
+T03.CF=abs(m150.CF-m600.CF)
+
+set.seed(54)
+
+B=10000
+T1.CF=numeric(B)
+T2.CF=numeric(B)
+T3.CF=numeric(B)
+n=length(emis.CF)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  CF.perm = emis.CF[perm]
+  m150.CF.perm = mean(CF.perm[i150.emis])
+  m300.CF.perm = mean(CF.perm[i300.emis])
+  m450.CF.perm = mean(CF.perm[i450.emis])
+  m600.CF.perm = mean(CF.perm[i600.emis])
+  
+  # Test statistic:
+  T1.CF[i] = abs(m150.CF.perm-m300.CF.perm)
+  T2.CF[i] = abs(m150.CF.perm-m450.CF.perm)
+  T3.CF[i] = abs(m150.CF.perm-m600.CF.perm)
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.CF, breaks = 30)
+abline(v=T01.CF,col=3,lwd=2)
+hist(T2.CF, breaks=30)
+abline(v=T02.CF,col=3,lwd=2)
+hist(T3.CF, breaks=30)
+abline(v=T03.CF,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.CF>=T01.CF)/B
+p1
+p2 <- sum(T2.CF>=T02.CF)/B
+p2
+p3 <- sum(T3.CF>=T03.CF)/B
+p3                         ### we have evidence that 600 degrees have a significant impact on the Christiansen Feature
+
+### TEST 2 --> EXPLOIT BOXPLOT
+T01.CF=as.double((box.CF$conf[,1] - box.CF$conf[,2])%*%(box.CF$conf[,1] - box.CF$conf[,2]))
+T02.CF=as.double((box.CF$conf[,1] - box.CF$conf[,3])%*%(box.CF$conf[,1] - box.CF$conf[,3]))
+T03.CF=as.double((box.CF$conf[,1] - box.CF$conf[,4])%*%(box.CF$conf[,1] - box.CF$conf[,4]))
+
+set.seed(54)
+
+B=10000
+T1.CF=numeric(B)
+T2.CF=numeric(B)
+T3.CF=numeric(B)
+n=length(emis.CF)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  CF.perm = emis.CF[perm]
+  box.CF.perm=boxplot(CF.perm[i150.emis], CF.perm[i300.emis], CF.perm[i450.emis], CF.perm[i600.emis], plot=FALSE)
+  
+  # Test statistic:
+  T1.CF[i]=(box.CF.perm$conf[,1] - box.CF.perm$conf[,2])%*%(box.CF.perm$conf[,1] - box.CF.perm$conf[,2])
+  T2.CF[i]=(box.CF.perm$conf[,1] - box.CF.perm$conf[,3])%*%(box.CF.perm$conf[,1] - box.CF.perm$conf[,3])
+  T3.CF[i]=(box.CF.perm$conf[,1] - box.CF.perm$conf[,4])%*%(box.CF.perm$conf[,1] - box.CF.perm$conf[,4])
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.CF, breaks = 30)
+abline(v=T01.CF,col=3,lwd=2)
+hist(T2.CF, breaks=30)
+abline(v=T02.CF,col=3,lwd=2)
+hist(T3.CF, breaks=30)
+abline(v=T03.CF,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.CF>=T01.CF)/B
+p1
+p2 <- sum(T2.CF>=T02.CF)/B
+p2
+p3 <- sum(T3.CF>=T03.CF)/B
+p3                            ### not anymore evidence
+
+### TEST 3: USE MEDIAN
+med150.CF=median(emis.CF[i150.emis])
+med300.CF=median(emis.CF[i300.emis])
+med450.CF=median(emis.CF[i450.emis])
+med600.CF=median(emis.CF[i600.emis])
+T01.CF=abs(med150.CF-med300.CF)
+T02.CF=abs(med150.CF-med450.CF)
+T03.CF=abs(med150.CF-med600.CF)
+
+set.seed(54)
+
+B=10000
+T1.CF=numeric(B)
+T2.CF=numeric(B)
+T3.CF=numeric(B)
+n=length(emis.CF)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  CF.perm = emis.CF[perm]
+  med150.CF.perm = median(CF.perm[i150.emis])
+  med300.CF.perm = median(CF.perm[i300.emis])
+  med450.CF.perm = median(CF.perm[i450.emis])
+  med600.CF.perm = median(CF.perm[i600.emis])
+  
+  # Test statistic:
+  T1.CF[i] <- abs(med150.CF.perm-med300.CF.perm)
+  T2.CF[i] <- abs(med150.CF.perm-med450.CF.perm)
+  T3.CF[i] <- abs(med150.CF.perm-med600.CF.perm)
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.CF, breaks = 30)
+abline(v=T01.CF,col=3,lwd=2)
+hist(T2.CF, breaks=30)
+abline(v=T02.CF,col=3,lwd=2)
+hist(T3.CF, breaks=30)
+abline(v=T03.CF,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.CF>=T01.CF)/B
+p1
+p2 <- sum(T2.CF>=T02.CF)/B
+p2
+p3 <- sum(T3.CF>=T03.CF)/B
+p3                         ### again no strong evidence
+
+### Christiansen Feature value
+
+x11()
+par(mfrow=c(1,2))
+plot(temp.emis, emis.CFval)
+plot(temp.refl, refl.CFval)
+
+box.CFval=boxplot(emis.CFval[i150.emis], emis.CFval[i300.emis], emis.CFval[i450.emis], emis.CFval[i600.emis]) ### differences
+boxplot(refl.CFval[i20.refl], refl.CFval[i500.refl]) ### same
+
+### TEST 1: JUST USE MEAN
+m150.CFval=mean(emis.CFval[i150.emis])
+m300.CFval=mean(emis.CFval[i300.emis])
+m450.CFval=mean(emis.CFval[i450.emis])
+m600.CFval=mean(emis.CFval[i600.emis])
+T01.CFval=abs(m150.CFval-m300.CFval)
+T02.CFval=abs(m150.CFval-m450.CFval)
+T03.CFval=abs(m150.CFval-m600.CFval)
+
+set.seed(54)
+
+B=10000
+T1.CFval=numeric(B)
+T2.CFval=numeric(B)
+T3.CFval=numeric(B)
+n=length(emis.CFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  CFval.perm = emis.CFval[perm]
+  m150.CFval.perm = mean(CFval.perm[i150.emis])
+  m300.CFval.perm = mean(CFval.perm[i300.emis])
+  m450.CFval.perm = mean(CFval.perm[i450.emis])
+  m600.CFval.perm = mean(CFval.perm[i600.emis])
+  
+  # Test statistic:
+  T1.CFval[i] = abs(m150.CFval.perm-m300.CFval.perm)
+  T2.CFval[i] = abs(m150.CFval.perm-m450.CFval.perm)
+  T3.CFval[i] = abs(m150.CFval.perm-m600.CFval.perm)
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.CFval, breaks = 30)
+abline(v=T01.CFval,col=3,lwd=2)
+hist(T2.CFval, breaks=30)
+abline(v=T02.CFval,col=3,lwd=2)
+hist(T3.CFval, breaks=30)
+abline(v=T03.CFval,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.CFval>=T01.CFval)/B
+p1
+p2 <- sum(T2.CFval>=T02.CFval)/B
+p2
+p3 <- sum(T3.CFval>=T03.CFval)/B
+p3                                  ### nothing
+
+### TEST 2 --> EXPLOIT BOXPLOT
+T01.CFval=as.double((box.CFval$conf[,1] - box.CFval$conf[,2])%*%(box.CFval$conf[,1] - box.CFval$conf[,2]))
+T02.CFval=as.double((box.CFval$conf[,1] - box.CFval$conf[,3])%*%(box.CFval$conf[,1] - box.CFval$conf[,3]))
+T03.CFval=as.double((box.CFval$conf[,1] - box.CFval$conf[,4])%*%(box.CFval$conf[,1] - box.CFval$conf[,4]))
+
+set.seed(54)
+
+B=10000
+T1.CFval=numeric(B)
+T2.CFval=numeric(B)
+T3.CFval=numeric(B)
+n=length(emis.CFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  CFval.perm = emis.CFval[perm]
+  box.CFval.perm=boxplot(CFval.perm[i150.emis], CFval.perm[i300.emis], CFval.perm[i450.emis], CFval.perm[i600.emis], plot=FALSE)
+  
+  # Test statistic:
+  T1.CFval[i]=(box.CFval.perm$conf[,1] - box.CFval.perm$conf[,2])%*%(box.CFval.perm$conf[,1] - box.CFval.perm$conf[,2])
+  T2.CFval[i]=(box.CFval.perm$conf[,1] - box.CFval.perm$conf[,3])%*%(box.CFval.perm$conf[,1] - box.CFval.perm$conf[,3])
+  T3.CFval[i]=(box.CFval.perm$conf[,1] - box.CFval.perm$conf[,4])%*%(box.CFval.perm$conf[,1] - box.CFval.perm$conf[,4])
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.CFval, breaks = 30)
+abline(v=T01.CFval,col=3,lwd=2)
+hist(T2.CFval, breaks=30)
+abline(v=T02.CFval,col=3,lwd=2)
+hist(T3.CFval, breaks=30)
+abline(v=T03.CFval,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.CFval>=T01.CFval)/B
+p1
+p2 <- sum(T2.CFval>=T02.CFval)/B
+p2
+p3 <- sum(T3.CFval>=T03.CFval)/B
+p3                                  ### nothing
+
+### TEST 3: USE MEDIAN
+med150.CFval=median(emis.CFval[i150.emis])
+med300.CFval=median(emis.CFval[i300.emis])
+med450.CFval=median(emis.CFval[i450.emis])
+med600.CFval=median(emis.CFval[i600.emis])
+T01.CFval=abs(med150.CFval-med300.CFval)
+T02.CFval=abs(med150.CFval-med450.CFval)
+T03.CFval=abs(med150.CFval-med600.CFval)
+
+set.seed(54)
+
+B=10000
+T1.CFval=numeric(B)
+T2.CFval=numeric(B)
+T3.CFval=numeric(B)
+n=length(emis.CFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  CFval.perm = emis.CFval[perm]
+  med150.CFval.perm = median(CFval.perm[i150.emis])
+  med300.CFval.perm = median(CFval.perm[i300.emis])
+  med450.CFval.perm = median(CFval.perm[i450.emis])
+  med600.CFval.perm = median(CFval.perm[i600.emis])
+  
+  # Test statistic:
+  T1.CFval[i] <- abs(med150.CFval.perm-med300.CFval.perm)
+  T2.CFval[i] <- abs(med150.CFval.perm-med450.CFval.perm)
+  T3.CFval[i] <- abs(med150.CFval.perm-med600.CFval.perm)
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.CFval, breaks = 30)
+abline(v=T01.CFval,col=3,lwd=2)
+hist(T2.CFval, breaks=30)
+abline(v=T02.CFval,col=3,lwd=2)
+hist(T3.CFval, breaks=30)
+abline(v=T03.CFval,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.CFval>=T01.CFval)/B
+p1
+p2 <- sum(T2.CFval>=T02.CFval)/B
+p2
+p3 <- sum(T3.CFval>=T03.CFval)/B
+p3                                 ### nothing
+
+### Transparency Feature
+
+x11()
+par(mfrow=c(1,2))
+plot(temp.emis, emis.TF)
+plot(temp.refl, refl.TF)
+
+box.TF=boxplot(emis.TF[i150.emis], emis.TF[i300.emis], emis.TF[i450.emis], emis.TF[i600.emis]) ### apparently same
+boxplot(refl.TF[i20.refl], refl.TF[i500.refl]) ### same
+
+### TEST 1: JUST USE MEAN
+m150.TF=mean(emis.TF[i150.emis])
+m300.TF=mean(emis.TF[i300.emis])
+m450.TF=mean(emis.TF[i450.emis])
+m600.TF=mean(emis.TF[i600.emis])
+T01.TF=abs(m150.TF-m300.TF)
+T02.TF=abs(m150.TF-m450.TF)
+T03.TF=abs(m150.TF-m600.TF)
+
+set.seed(54)
+
+B=10000
+T1.TF=numeric(B)
+T2.TF=numeric(B)
+T3.TF=numeric(B)
+n=length(emis.TF)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TF.perm = emis.TF[perm]
+  m150.TF.perm = mean(TF.perm[i150.emis])
+  m300.TF.perm = mean(TF.perm[i300.emis])
+  m450.TF.perm = mean(TF.perm[i450.emis])
+  m600.TF.perm = mean(TF.perm[i600.emis])
+  
+  # Test statistic:
+  T1.TF[i] = abs(m150.TF.perm-m300.TF.perm)
+  T2.TF[i] = abs(m150.TF.perm-m450.TF.perm)
+  T3.TF[i] = abs(m150.TF.perm-m600.TF.perm)
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.TF, breaks = 30)
+abline(v=T01.TF,col=3,lwd=2)
+hist(T2.TF, breaks=30)
+abline(v=T02.TF,col=3,lwd=2)
+hist(T3.TF, breaks=30)
+abline(v=T03.TF,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.TF>=T01.TF)/B
+p1
+p2 <- sum(T2.TF>=T02.TF)/B
+p2
+p3 <- sum(T3.TF>=T03.TF)/B
+p3                         ### nothing
+
+### TEST 2 --> EXPLOIT BOXPLOT
+T01.TF=as.double((box.TF$conf[,1] - box.TF$conf[,2])%*%(box.TF$conf[,1] - box.TF$conf[,2]))
+T02.TF=as.double((box.TF$conf[,1] - box.TF$conf[,3])%*%(box.TF$conf[,1] - box.TF$conf[,3]))
+T03.TF=as.double((box.TF$conf[,1] - box.TF$conf[,4])%*%(box.TF$conf[,1] - box.TF$conf[,4]))
+
+set.seed(54)
+
+B=10000
+T1.TF=numeric(B)
+T2.TF=numeric(B)
+T3.TF=numeric(B)
+n=length(emis.TF)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TF.perm = emis.TF[perm]
+  box.TF.perm=boxplot(TF.perm[i150.emis], TF.perm[i300.emis], TF.perm[i450.emis], TF.perm[i600.emis], plot=FALSE)
+  
+  # Test statistic:
+  T1.TF[i]=(box.TF.perm$conf[,1] - box.TF.perm$conf[,2])%*%(box.TF.perm$conf[,1] - box.TF.perm$conf[,2])
+  T2.TF[i]=(box.TF.perm$conf[,1] - box.TF.perm$conf[,3])%*%(box.TF.perm$conf[,1] - box.TF.perm$conf[,3])
+  T3.TF[i]=(box.TF.perm$conf[,1] - box.TF.perm$conf[,4])%*%(box.TF.perm$conf[,1] - box.TF.perm$conf[,4])
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.TF, breaks = 30)
+abline(v=T01.TF,col=3,lwd=2)
+hist(T2.TF, breaks=30)
+abline(v=T02.TF,col=3,lwd=2)
+hist(T3.TF, breaks=30)
+abline(v=T03.TF,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.TF>=T01.TF)/B
+p1
+p2 <- sum(T2.TF>=T02.TF)/B
+p2
+p3 <- sum(T3.TF>=T03.TF)/B
+p3                            ### nothing
+### TEST 3: USE MEDIAN
+med150.TF=median(emis.TF[i150.emis])
+med300.TF=median(emis.TF[i300.emis])
+med450.TF=median(emis.TF[i450.emis])
+med600.TF=median(emis.TF[i600.emis])
+T01.TF=abs(med150.TF-med300.TF)
+T02.TF=abs(med150.TF-med450.TF)
+T03.TF=abs(med150.TF-med600.TF)
+
+set.seed(54)
+
+B=10000
+T1.TF=numeric(B)
+T2.TF=numeric(B)
+T3.TF=numeric(B)
+n=length(emis.TF)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TF.perm = emis.TF[perm]
+  med150.TF.perm = median(TF.perm[i150.emis])
+  med300.TF.perm = median(TF.perm[i300.emis])
+  med450.TF.perm = median(TF.perm[i450.emis])
+  med600.TF.perm = median(TF.perm[i600.emis])
+  
+  # Test statistic:
+  T1.TF[i] <- abs(med150.TF.perm-med300.TF.perm)
+  T2.TF[i] <- abs(med150.TF.perm-med450.TF.perm)
+  T3.TF[i] <- abs(med150.TF.perm-med600.TF.perm)
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.TF, breaks = 30)
+abline(v=T01.TF,col=3,lwd=2)
+hist(T2.TF, breaks=30)
+abline(v=T02.TF,col=3,lwd=2)
+hist(T3.TF, breaks=30)
+abline(v=T03.TF,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.TF>=T01.TF)/B
+p1
+p2 <- sum(T2.TF>=T02.TF)/B
+p2
+p3 <- sum(T3.TF>=T03.TF)/B
+p3                         ### nothing
+
+
+### Transparency Feature value
+
+x11()
+par(mfrow=c(1,2))
+plot(temp.emis, emis.TFval)
+plot(temp.refl, refl.TFval)
+
+box.TFval=boxplot(emis.TFval[i150.emis], emis.TFval[i300.emis], emis.TFval[i450.emis], emis.TFval[i600.emis]) ### very different
+box2.TFval=boxplot(refl.TFval[i20.refl], refl.TFval[i500.refl]) ### same
+
+### TEST 1: JUST USE MEAN
+m150.TFval=mean(emis.TFval[i150.emis])
+m300.TFval=mean(emis.TFval[i300.emis])
+m450.TFval=mean(emis.TFval[i450.emis])
+m600.TFval=mean(emis.TFval[i600.emis])
+T01.TFval=abs(m150.TFval-m300.TFval)
+T02.TFval=abs(m150.TFval-m450.TFval)
+T03.TFval=abs(m150.TFval-m600.TFval)
+
+set.seed(54)
+
+B=10000
+T1.TFval=numeric(B)
+T2.TFval=numeric(B)
+T3.TFval=numeric(B)
+n=length(emis.TFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TFval.perm = emis.TFval[perm]
+  m150.TFval.perm = mean(TFval.perm[i150.emis])
+  m300.TFval.perm = mean(TFval.perm[i300.emis])
+  m450.TFval.perm = mean(TFval.perm[i450.emis])
+  m600.TFval.perm = mean(TFval.perm[i600.emis])
+  
+  # Test statistic:
+  T1.TFval[i] = abs(m150.TFval.perm-m300.TFval.perm)
+  T2.TFval[i] = abs(m150.TFval.perm-m450.TFval.perm)
+  T3.TFval[i] = abs(m150.TFval.perm-m600.TFval.perm)
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.TFval, breaks = 30)
+abline(v=T01.TFval,col=3,lwd=2)
+hist(T2.TFval, breaks=30)
+abline(v=T02.TFval,col=3,lwd=2)
+hist(T3.TFval, breaks=30)
+abline(v=T03.TFval,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.TFval>=T01.TFval)/B
+p1
+p2 <- sum(T2.TFval>=T02.TFval)/B
+p2
+p3 <- sum(T3.TFval>=T03.TFval)/B
+p3                         ### all cases seems pretty different in particular 2 and 3!!
+
+### TEST 2 --> EXPLOIT BOXPLOT
+T01.TFval=as.double((box.TFval$conf[,1] - box.TFval$conf[,2])%*%(box.TFval$conf[,1] - box.TFval$conf[,2]))
+T02.TFval=as.double((box.TFval$conf[,1] - box.TFval$conf[,3])%*%(box.TFval$conf[,1] - box.TFval$conf[,3]))
+T03.TFval=as.double((box.TFval$conf[,1] - box.TFval$conf[,4])%*%(box.TFval$conf[,1] - box.TFval$conf[,4]))
+
+set.seed(54)
+
+B=10000
+T1.TFval=numeric(B)
+T2.TFval=numeric(B)
+T3.TFval=numeric(B)
+n=length(emis.TFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TFval.perm = emis.TFval[perm]
+  box.TFval.perm=boxplot(TFval.perm[i150.emis], TFval.perm[i300.emis], TFval.perm[i450.emis], TFval.perm[i600.emis], plot=FALSE)
+  
+  # Test statistic:
+  T1.TFval[i]=(box.TFval.perm$conf[,1] - box.TFval.perm$conf[,2])%*%(box.TFval.perm$conf[,1] - box.TFval.perm$conf[,2])
+  T2.TFval[i]=(box.TFval.perm$conf[,1] - box.TFval.perm$conf[,3])%*%(box.TFval.perm$conf[,1] - box.TFval.perm$conf[,3])
+  T3.TFval[i]=(box.TFval.perm$conf[,1] - box.TFval.perm$conf[,4])%*%(box.TFval.perm$conf[,1] - box.TFval.perm$conf[,4])
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.TFval, breaks = 30)
+abline(v=T01.TFval,col=3,lwd=2)
+hist(T2.TFval, breaks=30)
+abline(v=T02.TFval,col=3,lwd=2)
+hist(T3.TFval, breaks=30)
+abline(v=T03.TFval,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.TFval>=T01.TFval)/B
+p1
+p2 <- sum(T2.TFval>=T02.TFval)/B
+p2
+p3 <- sum(T3.TFval>=T03.TFval)/B
+p3                            ### case 2 and 3!!
+
+### TEST 3: USE MEDIAN
+med150.TFval=median(emis.TFval[i150.emis])
+med300.TFval=median(emis.TFval[i300.emis])
+med450.TFval=median(emis.TFval[i450.emis])
+med600.TFval=median(emis.TFval[i600.emis])
+T01.TFval=abs(med150.TFval-med300.TFval)
+T02.TFval=abs(med150.TFval-med450.TFval)
+T03.TFval=abs(med150.TFval-med600.TFval)
+
+set.seed(54)
+
+B=10000
+T1.TFval=numeric(B)
+T2.TFval=numeric(B)
+T3.TFval=numeric(B)
+n=length(emis.TFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TFval.perm = emis.TFval[perm]
+  med150.TFval.perm = median(TFval.perm[i150.emis])
+  med300.TFval.perm = median(TFval.perm[i300.emis])
+  med450.TFval.perm = median(TFval.perm[i450.emis])
+  med600.TFval.perm = median(TFval.perm[i600.emis])
+  
+  # Test statistic:
+  T1.TFval[i] <- abs(med150.TFval.perm-med300.TFval.perm)
+  T2.TFval[i] <- abs(med150.TFval.perm-med450.TFval.perm)
+  T3.TFval[i] <- abs(med150.TFval.perm-med600.TFval.perm)
+}
+
+x11()
+par(mfrow=c(1,3))
+hist(T1.TFval, breaks = 30)
+abline(v=T01.TFval,col=3,lwd=2)
+hist(T2.TFval, breaks=30)
+abline(v=T02.TFval,col=3,lwd=2)
+hist(T3.TFval, breaks=30)
+abline(v=T03.TFval,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T1.TFval>=T01.TFval)/B
+p1
+p2 <- sum(T2.TFval>=T02.TFval)/B
+p2
+p3 <- sum(T3.TFval>=T03.TFval)/B
+p3                         ### again 
+
+
+### Based on this many tests we can conclude that we have a strong evidence that high temperatures have an impact
+### on the value of the transparency feature in emissivity. So maybe we should keep this in mind when building the model. 
+
+### explore for this case also the reflectance:
+
+### TEST 1: JUST USE MEAN
+m20.TFval=mean(refl.TFval[i20.refl])
+m500.TFval=mean(refl.TFval[i500.refl])
+
+T0.TFval=abs(m20.TFval-m500.TFval)
+
+
+set.seed(54)
+
+B=10000
+T.TFval=numeric(B)
+n=length(refl.TFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TFval.perm = refl.TFval[perm]
+  m20.TFval.perm = mean(TFval.perm[i20.refl])
+  m500.TFval.perm = mean(TFval.perm[i500.refl])
+  
+  # Test statistic:
+  T.TFval[i] = abs(m20.TFval.perm-m500.TFval.perm)
+}
+
+x11()
+hist(T.TFval, breaks = 30)
+abline(v=T0.TFval,col=3,lwd=2)
+
+
+# p-value
+p = sum(T.TFval>=T0.TFval)/B
+p                            ### nope
+
+### TEST 2 --> EXPLOIT BOXPLOT
+T0.TFval=as.double((box2.TFval$conf[,1] - box2.TFval$conf[,2])%*%(box2.TFval$conf[,1] - box2.TFval$conf[,2]))
+
+
+set.seed(54)
+
+B=10000
+T.TFval=numeric(B)
+
+n=length(refl.TFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TFval.perm = refl.TFval[perm]
+  box.TFval.perm=boxplot(TFval.perm[i20.refl], TFval.perm[i500.refl], plot=FALSE)
+  
+  # Test statistic:
+  T.TFval[i]=(box.TFval.perm$conf[,1] - box.TFval.perm$conf[,2])%*%(box.TFval.perm$conf[,1] - box.TFval.perm$conf[,2])
+}
+
+x11()
+hist(T.TFval, breaks = 30)
+abline(v=T0.TFval,col=3,lwd=2)
+
+
+# p-value
+p1 <- sum(T.TFval>=T0.TFval)/B
+p1                       ### nope
+
+### TEST 3: USE MEDIAN
+med20.TFval=median(refl.TFval[i20.refl])
+med500.TFval=median(refl.TFval[i500.refl])
+
+T0.TFval=abs(med20.TFval-med500.TFval)
+
+
+set.seed(54)
+
+B=10000
+T.TFval=numeric(B)
+
+n=length(refl.TFval)
+
+for(i in 1:B){
+  perm = sample(1:n)
+  TFval.perm = refl.TFval[perm]
+  med20.TFval.perm = median(TFval.perm[i20.refl])
+  med500.TFval.perm = median(TFval.perm[i500.refl])
+  
+  # Test statistic:
+  T.TFval[i] <- abs(med20.TFval.perm-med500.TFval.perm)
+}
+
+x11()
+hist(T.TFval, breaks = 30)
+abline(v=T0.TFval,col=3,lwd=2)
+
+
+
+# p-value
+p1 <- sum(T.TFval>=T0.TFval)/B
+p1          ### nope again
+
+
+
