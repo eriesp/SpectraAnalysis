@@ -9,22 +9,22 @@ display.brewer.all()
 # Import the datasets
 library(readxl)
 
-srp <- read_excel("RefugeeElectricity/Dataset/Srp_Emissivity.xlsx")
+srp <- read_excel("Dataset/Srp_Emissivity.xlsx")
 head(srp)
 View(srp)
 summary(srp)
 
-vul <- read_excel("RefugeeElectricity/Dataset/Vulcano_Emissivity.xlsx")
+vul <- read_excel("Dataset/Vulcano_Emissivity.xlsx")
 head(vul)
 View(vul)
 summary(vul)
 
-srp2 <- read_excel("RefugeeElectricity/Dataset/Srp_Reflectance.xlsx")
+srp2 <- read_excel("Dataset/Srp_Reflectance.xlsx")
 head(srp2)
 View(srp2)
 summary(srp2)
 
-vul2 <- read_excel("RefugeeElectricity/Dataset/Vulcano_Reflectance.xlsx")
+vul2 <- read_excel("Dataset/Vulcano_Reflectance.xlsx")
 head(vul2)
 View(vul2)
 summary(vul2)
