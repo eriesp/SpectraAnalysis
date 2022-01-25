@@ -321,7 +321,6 @@ abline(v=23.5)
 
 dev.off()
 
-#### ARRIVATA QUI ####
 ### GAM for emissivity explaining alcali ### NOT GOOD ENOUGH 
  
 alcali.emis.gam = gam(alcali.emis ~ s(emis.CF, bs='cr') + s(emis.CFval, bs='cr') + s(emis.TF, bs='cr') + s(emis.TFval, bs='cr'))

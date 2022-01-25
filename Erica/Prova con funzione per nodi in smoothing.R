@@ -83,9 +83,9 @@ basismat <- smooth.basis(argvals=refl.x, y=as.matrix(data_refl), fdParobj=basis)
 refl.smooth <- eval.fd(refl.x, basismat$fd)
 
 # first derivative
-ref.der1 <- eval.fd(refl.x, basismat$fd, Lfd=1)
+refl.der1 <- eval.fd(refl.x, basismat$fd, Lfd=1)
 # second derivative
-ref.der2 <- eval.fd(refl.x, basismat$fd, Lfd=2)
+refl.der2 <- eval.fd(refl.x, basismat$fd, Lfd=2)
 
 x11()
 par(mfrow=c(2,2))
