@@ -2,6 +2,8 @@
 
 ### Import the datasets ###
 
+################################################################################
+
 library(readxl)
 library(car)
 library(ISLR2)
@@ -9,6 +11,9 @@ library(mgcv)
 library(rgl)
 library(splines)
 library(pbapply)
+library(fda)
+library(fdatest)
+library(conformalInference)
 
 
 srp <- read_excel("Srp.xlsx")
@@ -35,8 +40,11 @@ summary(vul2)
 
 ### Feature extraction ###
 
-srp.emis=srp[713:1, -c(1,25)] # remove B600, FROM OUTLIER DETECTION (FUNCTIONAL BOXPLOT) 
-                              # WE CAN CONSIDER B600 AS A SPECIAL CASE, FOR THE MOMENT I REMOVE IT
+################################################################################
+
+### POSSIBILITA' DI USARE LE DERIVATE DAI DATI SMOOTHED
+
+srp.emis=srp[713:1, -1]
 srp.refl=srp2[, -1]
 vul.emis=vul[713:1,-1]
 vul.refl=vul2[,-1]
@@ -57,12 +65,12 @@ par(mfrow=c(1,2))
 matplot(emis.x, emis, type='l')
 matplot(refl.x, refl, type='l')
 
-emis.CF=numeric(43)
-emis.CFval=numeric(43)
-emis.TF=numeric(43)
-emis.TFval=numeric(43)
-emis.last=numeric(43)
-for(i in 1:43) {
+emis.CF=numeric(44)    
+emis.CFval=numeric(44)
+emis.TF=numeric(44)
+emis.TFval=numeric(44)
+emis.last=numeric(44)
+for(i in 1:44) {
   emis.CF[i]=which.max(unlist(emis[213:518,i])) + 213
   emis.CFval[i]=emis[emis.CF[i],i]
   emis.CF[i]=emis.x[emis.CF[i]]
@@ -72,12 +80,12 @@ for(i in 1:43) {
   emis.last[i]=emis[713,i]
 }
 
-srp.emis.CF=numeric(23)
-srp.emis.CFval=numeric(23)
-srp.emis.TF=numeric(23)
-srp.emis.TFval=numeric(23)
-srp.emis.last=numeric(23)
-for(i in 1:23) {
+srp.emis.CF=numeric(24)
+srp.emis.CFval=numeric(24)
+srp.emis.TF=numeric(24)
+srp.emis.TFval=numeric(24)
+srp.emis.last=numeric(24)
+for(i in 1:24) {
   srp.emis.CF[i]=which.max(unlist(srp.emis[213:518,i])) + 213
   srp.emis.CFval[i]=srp.emis[srp.emis.CF[i],i]
   srp.emis.CF[i]=emis.x[srp.emis.CF[i]]
@@ -147,7 +155,7 @@ for(i in 1:10) {
   vul.refl.last[i]=vul.refl[714,i]
 }
 
-temp.emis.srp = c(rep(150,6), rep(300,6), rep(450,6), rep(600,5))
+temp.emis.srp = c(rep(150,6), rep(300,6), rep(450,6), rep(600,6))
 temp.emis.vul = c(rep(150,5), rep(300,5), rep(450,5), rep(600,5))
 temp.emis = c(temp.emis.srp, temp.emis.vul)
 
@@ -155,20 +163,9 @@ temp.refl.srp = rep(c(20,500), 6)
 temp.refl.vul = rep(c(20,500), 5)
 temp.refl = c(temp.refl.srp, temp.refl.vul)
 
-dummy.srp.emis=numeric(23)
-dummy.srp.emis[19:23]=1
-dummy.vul.emis=numeric(20)
-dummy.vul.emis[16:20]=1
-dummy.srp.refl=numeric(12)
-dummy.srp.refl[seq(2,12,2)]=1
-dummy.vul.refl=numeric(10)
-dummy.vul.refl[seq(2,10,2)]=1
-dummy.emis=c(dummy.srp.emis, dummy.vul.emis)
-dummy.refl=c(dummy.srp.refl, dummy.vul.refl)
-
 silica.srp = c(72.28, 67.47, 62.64, 57.07, 53.03, 48.03)
 silica.vul = c(53.33, 59.66, 64.08, 67.96, 73.96)
-silica.srp.emis = rep(silica.srp,4)[-24]
+silica.srp.emis = rep(silica.srp,4)
 silica.vul.emis = rep(silica.vul,4)
 silica.srp.refl = c(72.28, 72.28, 67.47, 67.47, 62.64, 62.64, 57.07, 57.07, 53.03, 53.03, 48.03, 48.03)
 silica.vul.refl = c(53.33, 53.33, 59.66, 59.66, 64.08, 64.08, 67.96, 67.96, 73.96, 73.96)
@@ -177,7 +174,7 @@ silica.refl=c(silica.srp.refl, silica.vul.refl)
 
 alcali.srp = c(7.51, 6.62, 5.72, 4.78, 3.72, 2.71)
 alcali.vul = c(8.12, 8.40, 8.47, 8.45, 8.75)
-alcali.srp.emis = rep(alcali.srp,4)[-24]
+alcali.srp.emis = rep(alcali.srp,4)
 alcali.vul.emis = rep(alcali.vul,4)
 alcali.srp.refl = c(7.51, 7.51, 6.62, 6.62, 5.72, 5.72, 4.78, 4.78, 3.72, 3.72, 2.71, 2.71)
 alcali.vul.refl = c(8.12, 8.12, 8.40, 8.40, 8.47, 8.47, 8.45, 8.45, 8.75, 8.75)
@@ -187,6 +184,8 @@ alcali.refl=c(alcali.srp.refl, alcali.vul.refl)
 ################################################################################
 
 ### Some plots of our features ###
+
+################################################################################
 
 x11()
 plot(silica.emis, alcali.emis)
@@ -211,9 +210,6 @@ points(vul.emis.TFval, silica.vul.emis, col='blue', pch=19)
 plot(emis.last, silica.emis)
 points(srp.emis.last, silica.srp.emis, col='red', pch=19)
 points(vul.emis.last, silica.vul.emis, col='blue', pch=19)
-plot(dummy.emis, silica.emis)
-points(dummy.srp.emis, silica.srp.emis, col='red', pch=19)
-points(dummy.vul.emis, silica.vul.emis, col='blue', pch=19)
 
 scatterplotMatrix(data.frame(silica.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.last,temp.emis))
 
@@ -235,9 +231,6 @@ points(vul.refl.TFval, silica.vul.refl, col='blue', pch=19)
 plot(refl.last, silica.refl)
 points(srp.refl.last, silica.srp.refl, col='red', pch=19)
 points(vul.refl.last, silica.vul.refl, col='blue', pch=19)
-plot(dummy.refl, silica.refl)
-points(dummy.srp.refl, silica.srp.refl, col='red', pch=19)
-points(dummy.vul.refl, silica.vul.refl, col='blue', pch=19)
 
 scatterplotMatrix(data.frame(silica.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.last,temp.refl))
 
@@ -259,9 +252,6 @@ points(vul.emis.TFval, alcali.vul.emis, col='blue', pch=19)
 plot(emis.last, alcali.emis)
 points(srp.emis.last, alcali.srp.emis, col='red', pch=19)
 points(vul.emis.last, alcali.vul.emis, col='blue', pch=19)
-plot(dummy.emis, alcali.emis)
-points(dummy.srp.emis, alcali.srp.emis, col='red', pch=19)
-points(dummy.vul.emis, alcali.vul.emis, col='blue', pch=19)
 
 scatterplotMatrix(data.frame(alcali.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.last,temp.emis))
 
@@ -283,15 +273,16 @@ points(vul.refl.TFval, alcali.vul.refl, col='blue', pch=19)
 plot(refl.last, alcali.refl)
 points(srp.refl.last, alcali.srp.refl, col='red', pch=19)
 points(vul.refl.last, alcali.vul.refl, col='blue', pch=19)
-plot(dummy.refl, alcali.refl)
-points(dummy.srp.refl, alcali.srp.refl, col='red', pch=19)
-points(dummy.vul.refl, alcali.vul.refl, col='blue', pch=19)
 
 scatterplotMatrix(data.frame(alcali.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.last,temp.refl))
 
 ################################################################################
 
-### GAM for emissivity explaining silica ### SATISFYING RESULTS
+### GAM ### 
+
+################################################################################
+
+### for emissivity explaining silica ### SATISFYING RESULTS
 
 ### reduced model
 silica.emis.gam.reduced = gam(silica.emis ~ emis.CF + s(emis.CFval, bs='cr') + s(emis.TF, bs='cr') + s(emis.TFval, bs='cr'))
@@ -337,8 +328,6 @@ abline(a=0, b=1)
 plot(alcali.emis.gam$residuals)
 abline(a=0, b=0)
 abline(v=23.5)
-
-
 
 ### GAM for reflectance explaining silica ### PRETTY GOOD
 
@@ -391,6 +380,8 @@ abline(v=12.5)
 
 ### TAS classification ###
 
+################################################################################
+
 ### real values vs estimated values emissivity
 x11()
 plot(silica.emis, alcali.emis, col='green', pch=19)
@@ -404,6 +395,8 @@ points(silica.refl.gam$fitted.values, alcali.refl.gam$fitted.values, col='red', 
 ################################################################################
 
 ### More diagnostic on the model: effect of temperature on features ###
+
+################################################################################
 
 i150.emis=c(seq(1,6), seq(24,28))
 i300.emis=c(seq(7,12), seq(29,33))
@@ -471,7 +464,7 @@ p1
 p2 <- sum(T2.CF>=T02.CF)/B
 p2
 p3 <- sum(T3.CF>=T03.CF)/B
-p3                         ### we have evidence that 600 degrees have a significant impact on the Christiansen Feature
+p3                         ### we have evidence that 600 degrees have not a significant impact on the Christiansen Feature
 
 ### TEST 2 --> EXPLOIT BOXPLOT
 T01.CF=as.double((box.CF$conf[,1] - box.CF$conf[,2])%*%(box.CF$conf[,1] - box.CF$conf[,2]))
@@ -513,7 +506,7 @@ p1
 p2 <- sum(T2.CF>=T02.CF)/B
 p2
 p3 <- sum(T3.CF>=T03.CF)/B
-p3                            ### not anymore evidence
+p3                            ### no evidence
 
 ### TEST 3: USE MEDIAN
 med150.CF=median(emis.CF[i150.emis])
@@ -1114,6 +1107,255 @@ abline(v=T0.TFval,col=3,lwd=2)
 # p-value
 p1 <- sum(T.TFval>=T0.TFval)/B
 p1          ### nope again
+
+################################################################################
+
+### Permutation test considering data as a function ###
+
+################################################################################
+
+### EMISSIVITY
+
+x11()
+matplot(emis.x, emis, type='l')
+matlines(emis.x, emis[,c(seq(1,6), seq(25,29))], type='l', col='blue')
+matlines(emis.x, emis[,c(seq(7,12), seq(30,34))], type='l', col='green')
+matlines(emis.x, emis[,c(seq(13,18), seq(35,39))], type='l', col='gold')
+matlines(emis.x, emis[,c(seq(19,24), seq(40,44))], type='l', col='red')
+
+mean.line.150 = rowMeans(emis[,c(seq(1,6), seq(25,29))])
+mean.line.300 = rowMeans(emis[,c(seq(7,12), seq(30,34))])
+mean.line.450 = rowMeans(emis[,c(seq(13,18), seq(35,39))])
+mean.line.600 = rowMeans(emis[,c(seq(19,24), seq(40,44))])
+
+x11()
+matplot(emis.x, mean.line.150, type='l', col='blue')
+matlines(emis.x, mean.line.300, type='l', col='green')
+matlines(emis.x, mean.line.450, type='l', col='gold')
+matlines(emis.x, mean.line.600, type='l', col='red')
+
+#150 vs 300
+test1=IWT2(t(data.matrix(emis[seq(1,713,10),c(seq(1,6), seq(25,29))])),t(data.matrix(emis[seq(1,713,10),c(seq(7,12), seq(30,34))])))
+x11()
+par(mfrow=c(1,2))
+plot(test1)
+
+#150 vs 450
+test2=IWT2(t(data.matrix(emis[seq(1,713,10),c(seq(1,6), seq(25,29))])),t(data.matrix(emis[seq(1,713,10),c(seq(13,18), seq(35,39))])))
+x11()
+par(mfrow=c(1,2))
+plot(test2)
+
+#150 vs 600
+test3=IWT2(t(data.matrix(emis[seq(1,713,10),c(seq(1,6), seq(25,29))])),t(data.matrix(emis[seq(1,713,10),c(seq(19,24), seq(40,44))])))
+x11()
+par(mfrow=c(1,2))
+plot(test3)
+
+#300 vs 600
+test3bis=IWT2(t(data.matrix(emis[seq(1,713,10),c(seq(7,12), seq(30,34))])),t(data.matrix(emis[seq(1,713,10),c(seq(19,24), seq(40,44))])))
+x11()
+par(mfrow=c(1,2))
+plot(test3bis)
+
+#450 vs 600
+test3tris=IWT2(t(data.matrix(emis[seq(1,713,10),c(seq(13,18), seq(35,39))])),t(data.matrix(emis[seq(1,713,10),c(seq(19,24), seq(40,44))])))
+x11()
+par(mfrow=c(1,2))
+plot(test3tris)
+
+
+### REFLECTANCE
+
+x11()
+matplot(refl.x, refl, type='l')
+matlines(refl.x, refl[,seq(1,22,2)], type='l', col='blue')
+matlines(refl.x, refl[,seq(2,22,2)], type='l', col='red')
+
+mean.line.20 = rowMeans(refl[,seq(1,22,2)])
+mean.line.500 = rowMeans(refl[,seq(2,22,2)])
+
+x11()
+matplot(refl.x, mean.line.20, type='l', col='blue')
+matlines(refl.x, mean.line.500, type='l', col='green')
+
+
+#20 vs 500
+test4=IWT2(t(data.matrix(refl[seq(1,714,10),seq(1,22,2)])),t(data.matrix(refl[seq(1,714,10),seq(2,22,2)])))
+x11()
+par(mfrow=c(1,2))
+plot(test4)
+
+### The only difference we can appreciate is between 150 and 600 degrees in the emissivity and it is all around the
+### Transparency Feature --> another confirmation that using a dummy variable may be useful
+### DOUBT: 450 and 600 degrees don't show statistical evidence to assert difference: 450 with 600 or 150? 
+### From permutation tests (multivariate approach) better with 600! 
+
+################################################################################
+
+### New GAM with dummy variable ###
+
+################################################################################
+
+dummy.high.temp = numeric(length(emis.TFval))
+dummy.high.temp = 1*(temp.emis >=450)
+
+### for emissivity explaining silica ### SATISFYING RESULTS
+
+silica.emis.gam.dummy = gam(silica.emis ~ emis.CF +                               
+                              s(emis.CFval, bs='cr') +                    
+                              s(emis.TF, bs='cr') + 
+                              s(emis.TFval, bs='cr'))
+                              #s(I(emis.TFval*dummy.high.temp), bs='cr'))
+
+
+
+summary(silica.emis.gam.dummy)
+
+hist(silica.emis.gam.dummy$residuals)
+qqnorm(silica.emis.gam.dummy$residuals)
+shapiro.test(silica.emis.gam.dummy$residuals)
+
+plot(silica.emis.gam.dummy)
+
+x11()
+plot(silica.emis, silica.emis.gam.dummy$fitted.values)
+abline(a=0, b=1)
+plot(silica.emis.gam.dummy$residuals)
+abline(a=0, b=0)
+abline(v=23.5)
+
+### GAM for emissivity explaining alcali 
+
+alcali.emis.gam.dummy = gam(alcali.emis ~ emis.CF +    
+                        s(emis.CFval, bs='cr') + 
+                        s(emis.TF, bs='cr') + 
+                        s(emis.TFval, bs='cr'))        ### in the end the dummy looks not influencial for alcali
+
+summary(alcali.emis.gam.dummy)
+
+hist(alcali.emis.gam.dummy$residuals)
+qqnorm(alcali.emis.gam.dummy$residuals)
+shapiro.test(alcali.emis.gam.dummy$residuals)
+
+plot(alcali.emis.gam.dummy)
+
+x11()
+plot(alcali.emis, alcali.emis.gam.dummy$fitted.values)
+abline(a=0, b=1)
+plot(alcali.emis.gam.dummy$residuals)
+abline(a=0, b=0)
+abline(v=23.5)
+
+### SUMMING UP OUR MODELS ###
+
+GAM.silica.emis = silica.emis.gam.dummy
+GAM.silica.refl = silica.refl.gam
+GAM.alcali.emis = alcali.emis.gam.dummy
+GAM.alcali.refl = alcali.refl.gam
+
+################################################################################
+
+### LOOCV ###
+
+################################################################################
+
+### EMISSIVITY SILICA
+
+n = ncol(emis)
+residuals.emis.silica = numeric(n)
+
+emis.data=data.frame(CF=emis.CF, CFval=emis.CFval, TF=emis.TF, TFval=emis.TFval, dummy=dummy.high.temp, silica=silica.emis, alcali=alcali.emis)
+
+for (i in 1:n){
+  gam.cv = gam(silica ~ CF + 
+                 #s(CFval, bs='cr') + 
+                 #s(TF, bs='cr') + 
+                 s(TFval, bs='cr'), data=emis.data[-i,]) 
+                 #s(I(TFval*dummy), bs='cr'))
+  newdata=data.frame(CF=emis.data$CF[i], 
+                     #CFval=emis.data$CFval[i], 
+                     #TF=emis.data$TF[i], 
+                     TFval=emis.data$TFval[i]) 
+                     #dummy=emis.data$dummy[i])
+  pred=predict(gam.cv, newdata=newdata)
+  residuals.emis.silica[i] = silica.emis[i] - pred
+}
+
+x11()
+par(mfrow=c(1,2))
+plot(residuals.emis.silica)
+plot(GAM.silica.emis$residuals)
+
+### QUA SEMBRA CHE CI SIANO PROBLEMI DI OVERFITTING
+
+### EMISSIVITY ALCALI
+
+residuals.emis.alcali = numeric(n)
+
+for (i in 1:n){
+  gam.cv = gam(alcali ~ CF + 
+                 s(CFval, bs='cr') + 
+                 s(TF, bs='cr') + 
+                 s(TFval, bs='cr'), data=emis.data[-i,])
+  newdata=data.frame(CF=emis.data$CF[i], 
+                     CFval=emis.data$CFval[i], 
+                     TF=emis.data$TF[i], 
+                     TFval=emis.data$TFval[i])
+  pred=predict(gam.cv, newdata=newdata)
+  residuals.emis.alcali[i] = alcali.emis[i] - pred
+}
+
+x11()
+par(mfrow=c(1,2))
+plot(residuals.emis.alcali)
+plot(GAM.alcali.emis$residuals)
+
+### REFLECTANCE SILICA
+
+m = ncol(refl)
+residuals.refl.silica = numeric(m)
+
+refl.data=data.frame(CF=refl.CF, TFval=refl.TFval, silica=silica.refl, alcali=alcali.refl)
+
+for (i in 1:m){
+  gam.cv = gam(silica ~ s(CF, bs='cr') + 
+                        s(TFval, bs='cr'), data=refl.data[-i,])
+  newdata=data.frame(CF=refl.data$CF[i], 
+                     TFval=refl.data$TFval[i])
+  pred=predict(gam.cv, newdata=newdata)
+  residuals.refl.silica[i] = silica.refl[i] - pred
+}
+
+x11()
+par(mfrow=c(1,2))
+plot(residuals.refl.silica)
+plot(GAM.silica.refl$residuals)
+
+### REFLECTANCE ALCALI
+
+residuals.refl.alcali = numeric(m)
+
+for (i in 1:m){
+  gam.cv = gam(alcali ~ s(CF, bs='cr') + 
+                        s(TFval, bs='cr'), data=refl.data[-i,])
+  newdata=data.frame(CF=refl.data$CF[i], 
+                     TFval=refl.data$TFval[i])
+  pred=predict(gam.cv, newdata=newdata)
+  residuals.refl.alcali[i] = alcali.refl[i] - pred
+}
+
+x11()
+par(mfrow=c(1,2))
+plot(residuals.refl.alcali)
+plot(GAM.alcali.refl$residuals)
+
+
+
+
+
+
+
 
 
 
