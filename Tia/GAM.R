@@ -1269,13 +1269,13 @@ emis.data=data.frame(CF=emis.CF, CFval=emis.CFval, TF=emis.TF, TFval=emis.TFval,
 
 for (i in 1:n){
   gam.cv = gam(silica ~ CF + 
-                 #s(CFval, bs='cr') + 
-                 #s(TF, bs='cr') + 
+                 s(CFval, bs='cr') + 
+                 s(TF, bs='cr') + 
                  s(TFval, bs='cr'), data=emis.data[-i,]) 
                  #s(I(TFval*dummy), bs='cr'))
   newdata=data.frame(CF=emis.data$CF[i], 
-                     #CFval=emis.data$CFval[i], 
-                     #TF=emis.data$TF[i], 
+                     CFval=emis.data$CFval[i], 
+                     TF=emis.data$TF[i], 
                      TFval=emis.data$TFval[i]) 
                      #dummy=emis.data$dummy[i])
   pred=predict(gam.cv, newdata=newdata)
