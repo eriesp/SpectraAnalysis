@@ -34,6 +34,28 @@ summary(vul2)
 #######                        Exploratory plots                         #######
 ################################################################################
 
+# voglio fare 4 grafici
+# emissività tutti i blend di USA a prescindere dalla temperatura
+# emissivita tutti i blend di Italy a prescindere dalla temperatura
+# riflettanza tutti i blend di USA a prescindere dalla temperatura
+# riflettanza tutti i blend di Italy a prescindere dalla temperatura
+
+x11()
+matplot(srp[,1], srp[,2:25], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='Spectral')[4:1], xlab='Wavelength (micron)', ylab='emissivity', main='Emissivity of SRP blends')
+legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='Spectral')[4:1])
+
+x11()
+matplot(vul[,1], vul[,2:21], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='Spectral')[4:1], xlab='Wavelength (micron)', ylab='emissivity', main='Emissivity of Vulcano blends')
+legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='Spectral')[4:1])
+
+x11()
+matplot(srp2[,1], srp2[,2:13], type='l', lty=1, lwd=2, col=c('lightblue','red'), xlab='Wavelength (micron)', ylab='1-reflectance', main='Reflectance of SRP blends')
+legend('bottomright', legend=c('room temp','500°'), lty=1, col=c('lightblue','red'))
+
+x11()
+matplot(vul2[,1], vul2[,2:11], type='l', lty=1, lwd=2, col=c('lightblue','red'), xlab='Wavelength (micron)', ylab='1-reflectance', main='Reflectance of Vulcano blends')
+legend('bottomright', legend=c('room temp','500°'), lty=1, col=c('lightblue','red'))
+
 # Graphs wavelength vs emissivity same blend different temperatures in Srp
 X11()
 par(mfrow=c(2,3))

@@ -95,4 +95,107 @@ matplot(refl.x,refl.der1 ,type="l",lwd=1)
 matplot(refl.x,refl.der2 ,type="l",lwd=1)
 
 
+# emissivity
+
+nbasis <- 6:30
+gcv <- numeric(length(nbasis))
+for (i in 1:length(nbasis)){
+  basis <- create.bspline.basis(c(emis.x[1],emis.x[length(emis.x)]), nbasis[i], m)
+  gcv[i] <- smooth.basis(emis.x, as.matrix(data_emis), basis)$gcv
+}
+par(mfrow=c(1,1))
+plot(nbasis,gcv)
+nbasis[which.min(gcv)]
+
+nbasis=25
+basis <- create.bspline.basis(c(emis.x[1],emis.x[length(emis.x)]), nbasis, m)
+
+basismat <- eval.basis(emis.x, basis)
+basismat1<- eval.basis(emis.x, basis, Lfdobj=1)
+basismat2<- eval.basis(emis.x, basis, Lfdobj=2)
+
+
+emis.smooth <- basismat %*% lsfit(basismat, data_emis, intercept=FALSE)$coef
+emis.der1 <- basismat1 %*% lsfit(basismat, data_emis, intercept=FALSE)$coef
+emis.der2 <- basismat2 %*% lsfit(basismat, data_emis, intercept=FALSE)$coef
+
+
+#### l2 norm delle derivate dei segnali di emissività ####
+
+emis.der.l2norm = numeric(44)
+for (i in 1:44){
+  emis.der.l2norm[i] = norm(emis.der1[i,], type = '2')
+}
+
+par(mfrow=c(1,1))
+matplot(emis.x,emis.der1[,c(1,44)], type = 'l')
+
+plot(emis.der.l2norm,tupe='l')
+
+plot(emis.der.l2norm, silica.emis)
+
+#### l2 norm delle derivate dei segnali di riflettanza ####
+
+n.refl = dim(data_refl)[2]
+
+refl.der.l2norm = numeric(n.refl)
+for (i in 1:n.refl){
+  refl.der.l2norm[i] = norm(refl.der1[i,], type = '2')
+}
+
+# par(mfrow=c(1,1))
+# matplot(refl.x,refl.der1[,c(1,n.refl)], type = 'l')
+
+plot(refl.der.l2norm, silica.refl)
+plot(refl.der.l2norm, alcali.refl)
+
+scatterplotMatrix(data.frame(silica.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.der.l2norm))
+
+
+#### GAM silica ~ f(refl) ####
+silica.refl.gam = gam(silica.refl ~ refl.CF + s(refl.TFval, bs='cr') + refl.TF + 
+                        I(refl.TF^2) + s(refl.der.l2norm, bs = 'cr'))
+summary(silica.refl.gam)
+
+hist(silica.refl.gam$residuals)
+qqnorm(silica.refl.gam$residuals)
+shapiro.test(silica.refl.gam$residuals)
+
+silica.refl.gam.reduced = gam(silica.refl ~ refl.CF + refl.TFval + s(refl.der.l2norm, bs = 'cr') )
+summary(silica.refl.gam.reduced)
+
+hist(silica.refl.gam.reduced$residuals)
+qqnorm(silica.refl.gam.reduced$residuals)
+shapiro.test(silica.refl.gam.reduced$residuals)
+
+# potrebbe funzionare
+
+
+
+#### GAM alcali ~ f(refl) ####
+
+scatterplotMatrix(data.frame(alcali.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.der.l2norm,temp.refl))
+
+alcali.refl.gam = gam(alcali.refl ~ refl.CF + s(refl.TFval, bs='cr') +  s(refl.der.l2norm, bs = 'cr'))
+summary(alcali.refl.gam)
+
+hist(alcali.refl.gam$residuals)
+qqnorm(alcali.refl.gam$residuals)
+shapiro.test(alcali.refl.gam$residuals)
+
+# no funziona meglio quello senza derivate
+
+
+#### GAM silica ~ f(emis) ####
+# dati i plot penso che la norma l2 dei grafici di emissività non possa contribuire 
+
+
+scatterplotMatrix(data.frame(silica.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.der.l2norm))
+# useless
+
+
+scatterplotMatrix(data.frame(alcali.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.der.l2norm))
+# useless
+
+
 
