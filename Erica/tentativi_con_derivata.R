@@ -128,10 +128,8 @@ shapiro.test(alcali.refl.gam$residuals)
 
 
 scatterplotMatrix(data.frame(silica.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.der.l2norm))
+# ok useless
 
 
-
-
-
-scatterplotMatrix(data.frame(alcali.refl,refl.CF,refl.CFval,refl.TF,refl.TFval,refl.der.l2norm,temp.refl))
-
+scatterplotMatrix(data.frame(alcali.emis,emis.CF,emis.CFval,emis.TF,emis.TFval,emis.der.l2norm))
+# ok useless

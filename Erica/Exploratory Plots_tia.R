@@ -4,6 +4,7 @@
 
 # Very important color initialization
 library("RColorBrewer")
+x11()
 display.brewer.all()
 
 # Import the datasets
@@ -37,23 +38,23 @@ summary(vul2)
 X11()
 par(mfrow=c(2,3))
 
-matplot(srp[,1], srp[,c(2,8,14,20)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='YlOrRd'), xlab='Wavelength (micron)', ylab='emissivity', main='RB Blend')
-legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='YlOrRd'))
+matplot(srp[,1], srp[,c(2,8,14,20)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='Spectral')[4:1], xlab='Wavelength (micron)', ylab='emissivity', main='RB Blend')
+legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='Spectral')[4:1])
 
-matplot(srp[,1], srp[,c(3,9,15,21)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='YlOrRd'), xlab='Wavelength (micron)', ylab='emissivity', main='B2 Blend')
-legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='YlOrRd'))
+matplot(srp[,1], srp[,c(3,9,15,21)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='Spectral')[4:1], xlab='Wavelength (micron)', ylab='emissivity', main='B2 Blend')
+legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='Spectral')[4:1])
 
-matplot(srp[,1], srp[,c(4,10,16,22)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='YlOrRd'), xlab='Wavelength (micron)', ylab='emissivity', main='B4 Blend')
-legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='YlOrRd'))
+matplot(srp[,1], srp[,c(4,10,16,22)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='Spectral')[4:1], xlab='Wavelength (micron)', ylab='emissivity', main='B4 Blend')
+legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='Spectral')[4:1])
 
-matplot(srp[,1], srp[,c(5,11,17,23)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='YlOrRd'), xlab='Wavelength (micron)', ylab='emissivity', main='B6 Blend')
-legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='YlOrRd'))
+matplot(srp[,1], srp[,c(5,11,17,23)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='Spectral')[4:1], xlab='Wavelength (micron)', ylab='emissivity', main='B6 Blend')
+legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='Spectral')[4:1])
 
-matplot(srp[,1], srp[,c(6,12,18,24)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='YlOrRd'), xlab='Wavelength (micron)', ylab='emissivity', main='B8 Blend')
-legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='YlOrRd'))
+matplot(srp[,1], srp[,c(6,12,18,24)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='Spectral')[4:1], xlab='Wavelength (micron)', ylab='emissivity', main='B8 Blend')
+legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='Spectral')[4:1])
 
-matplot(srp[,1], srp[,c(7,3,19,25)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='YlOrRd'), xlab='Wavelength (micron)', ylab='emissivity', main='B Blend')
-legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='YlOrRd'))
+matplot(srp[,1], srp[,c(7,3,19,25)], type='l', lty=1, lwd=2, col=brewer.pal(n=4,name='Spectral')[4:1], xlab='Wavelength (micron)', ylab='emissivity', main='B Blend')
+legend('bottomright', legend=c('150','300','450','600'), lty=1, col=brewer.pal(n=4,name='Spectral')[4:1])
 
 
 # Graphs wavelength vs emissivity same blend different temperatures in Srp
@@ -69,7 +70,8 @@ legend('bottomright', legend=c('RB','B2','B4','B6','B8','B'), lty=1, col=brewer.
 matplot(srp[,1], srp[,c(14,15,16,17,18,19)], type='l', lty=1, lwd=2, col=brewer.pal(n=6,name='BrBG'), xlab='Wavelength (micron)', ylab='emissivity', main='450°')
 legend('bottomright', legend=c('RB','B2','B4','B6','B8','B'), lty=1, col=brewer.pal(n=6,name='BrBG'))
 
-matplot(srp[,1], srp[,c(20,21,22,23,24,25)], type='l', lty=1, lwd=2, col=brewer.pal(n=6,name='BrBG'), xlab='Wavelength (micron)', ylab='emissivity', main='600°')
+matplot(srp[,1], srp[,c(20,21,22,23,24,25)], type='l', lty=1, lwd=2, col=brewer.pal(n=6,name='BrBG'),
+        xlab='Wavelength (micron)', ylab='emissivity', main='Emissivity - 600°C')
 legend('bottomright', legend=c('RB','B2','B4','B6','B8','B'), lty=1, col=brewer.pal(n=6,name='BrBG'))
 
 

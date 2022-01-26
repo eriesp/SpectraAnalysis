@@ -31,7 +31,7 @@ summary(vul2)
 
 ### Feature extraction ###
 
-srp.emis=srp[713:1, -c(1,25)] # remove B600, FROM OUTLIER DETECTION (FUNCTIONAL BOXPLOT) 
+srp.emis=srp[713:1, -1] # remove B600, FROM OUTLIER DETECTION (FUNCTIONAL BOXPLOT) 
                               # WE CAN CONSIDER B600 AS A SPECIAL CASE, FOR THE MOMENT I REMOVE IT
 srp.refl=srp2[, -1]
 vul.emis=vul[713:1,-1]
@@ -53,12 +53,14 @@ par(mfrow=c(1,2))
 matplot(emis.x, emis, type='l')
 matplot(refl.x, refl, type='l')
 
-emis.CF=numeric(43)
-emis.CFval=numeric(43)
-emis.TF=numeric(43)
-emis.TFval=numeric(43)
-emis.last=numeric(43)
-for(i in 1:43) {
+n.emis = dim(emis)[2]
+
+emis.CF=numeric(n.emis)
+emis.CFval=numeric(n.emis)
+emis.TF=numeric(n.emis)
+emis.TFval=numeric(n.emis)
+emis.last=numeric(n.emis)
+for(i in 1:n.emis) {
   emis.CF[i]=which.max(unlist(emis[213:518,i])) + 213
   emis.CFval[i]=emis[emis.CF[i],i]
   emis.CF[i]=emis.x[emis.CF[i]]
@@ -164,7 +166,7 @@ dummy.refl=c(dummy.srp.refl, dummy.vul.refl)
 
 silica.srp = c(72.28, 67.47, 62.64, 57.07, 53.03, 48.03)
 silica.vul = c(53.33, 59.66, 64.08, 67.96, 73.96)
-silica.srp.emis = rep(silica.srp,4)[-24]
+silica.srp.emis = rep(silica.srp,4)
 silica.vul.emis = rep(silica.vul,4)
 silica.srp.refl = c(72.28, 72.28, 67.47, 67.47, 62.64, 62.64, 57.07, 57.07, 53.03, 53.03, 48.03, 48.03)
 silica.vul.refl = c(53.33, 53.33, 59.66, 59.66, 64.08, 64.08, 67.96, 67.96, 73.96, 73.96)
@@ -173,7 +175,7 @@ silica.refl=c(silica.srp.refl, silica.vul.refl)
 
 alcali.srp = c(7.51, 6.62, 5.72, 4.78, 3.72, 2.71)
 alcali.vul = c(8.12, 8.40, 8.47, 8.45, 8.75)
-alcali.srp.emis = rep(alcali.srp,4)[-24]
+alcali.srp.emis = rep(alcali.srp,4)
 alcali.vul.emis = rep(alcali.vul,4)
 alcali.srp.refl = c(7.51, 7.51, 6.62, 6.62, 5.72, 5.72, 4.78, 4.78, 3.72, 3.72, 2.71, 2.71)
 alcali.vul.refl = c(8.12, 8.12, 8.40, 8.40, 8.47, 8.47, 8.45, 8.45, 8.75, 8.75)
