@@ -1,0 +1,108 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+
+```{r}
+library(conformalInference)
+train_gam=function(x,y,out=NULL){
+  colnames(x)=c('var1','var2','var3','var4')
+  train_data=data.frame(y,x)
+  model_gam=gam(y ~ var1 + s(var2,bs='cr')+s(var3,bs='cr')+s(var4,bs='cr'),data=train_data)
+}
+
+
+predict_gam=function(obj, new_x){
+  new_x=data.frame(new_x)
+  colnames(new_x)=c('var1','var2','var3','var4')
+  predict.gam(obj,new_x)
+}
+silica.emis.gam.reduced = gam(silica.emis ~ emis.CF + s(emis.CFval, bs='cr') + s(emis.TF, bs='cr') + s(emis.TFval, bs='cr'))
+n=length(silica.emis)
+CI.silica.emis<-matrix(nrow = n,ncol=3)
+cf_matrix<-cbind(emis.CF,emis.CFval,emis.TF,emis.TFval)
+c_preds=conformal.pred(cbind(emis.CF,emis.CFval,emis.TF,emis.TFval),silica.emis,cf_matrix,alpha=0.05,verbose=T,train.fun = train_gam ,predict.fun = predict_gam,num.grid.pts = 200)
+prediction<-cbind(c_preds$lo,c_preds$pred,c_preds$up)
+plot(1:n,silica.emis,col="red",ylim=c(40,80), pch=19)
+points(prediction[,3],col="blue", pch=19)
+points(prediction[,1],col="blue", pch=19)
+title("Silica from emissivity prediction")
+for(i in 1:n){
+  segments(i,prediction[i,1],i,prediction[i,3])
+}
+
+```
+
+
+```{r}
+train_gam=function(x,y,out=NULL){
+  colnames(x)=c('var1','var2','var3','var4')
+  train_data=data.frame(y,x)
+  model_gam=gam(y ~ var1 + s(var2,bs='cr')+s(var3,bs='cr')+s(var4,bs='cr'),data=train_data)
+}
+
+alcali.emis.gam = gam(alcali.emis ~ emis.CF + s(emis.CFval, bs='cr') + s(emis.TF, bs='cr') + s(emis.TFval, bs='cr'))
+
+c_preds=conformal.pred(cbind(emis.CF,emis.CFval,emis.TF,emis.TFval),alcali.emis,cf_matrix,alpha=0.05,verbose=T,train.fun = train_gam ,predict.fun = predict_gam,num.grid.pts = 200)
+prediction2<-cbind(c_preds$lo,c_preds$pred,c_preds$up)
+plot(1:n,alcali.emis,ylim=c(0,15),col="red", pch=19)
+points(prediction2[,3],col="blue", pch=19)
+points(prediction2[,1],col="blue", pch=19)
+title("alcali from emissivity prediction")
+for(i in 1:n){
+  segments(i,prediction2[i,1],i,prediction2[i,3])
+}
+```
+
+
+```{r}
+train_gam=function(x,y,out=NULL){
+  colnames(x)=c('var1','var2')
+  train_data=data.frame(y,x)
+  model_gam=gam(y ~ s(var1, bs='cr') + s(var2,bs='cr'),data=train_data)
+}
+predict_gam=function(obj, new_x){
+  new_x=data.frame(new_x)
+  colnames(new_x)=c('var1','var2')
+  predict.gam(obj,new_x)
+}
+n=length(silica.refl)
+silica.refl.gam.reduced = gam(silica.refl ~ s(refl.CF, bs='cr') + s(refl.TFval, bs='cr'))
+cf_matrix_red<-cbind(refl.CF,refl.TFval)
+c_preds=conformal.pred(cbind(refl.CF,refl.TFval),silica.refl,cf_matrix_red,alpha=0.05,verbose=T,train.fun = train_gam ,predict.fun = predict_gam,num.grid.pts = 200)
+prediction3<-cbind(c_preds$lo,c_preds$pred,c_preds$up)
+plot(1:n,silica.refl,ylim=c(40,80),col="red", pch=19)
+points(prediction3[,3],col="blue", pch=19)
+points(prediction3[,1],col="blue", pch=19)
+title("silica from reflectance prediction")
+for(i in 1:n){
+  segments(i,prediction3[i,1],i,prediction3[i,3])
+}
+
+```
+
+
+```{r}
+train_gam=function(x,y,out=NULL){
+  colnames(x)=c('var1','var2')
+  train_data=data.frame(y,x)
+  model_gam=gam(y ~ s(var1,bs='cr') + s(var2,bs='cr'),data=train_data)
+}
+alcali.refl.gam = gam(alcali.refl ~ s(refl.CF, bs='cr') + s(refl.TFval, bs='cr'))
+n=length(alcali.refl)
+cf_matrix_red<-cbind(refl.CF,refl.TFval)
+c_preds=conformal.pred(cbind(refl.CF,refl.TFval),alcali.refl,cf_matrix_red,alpha=0.05,verbose=T,train.fun = train_gam ,predict.fun = predict_gam,num.grid.pts = 200)
+prediction4<-cbind(c_preds$lo,c_preds$pred,c_preds$up)
+plot(1:n,alcali.refl,col="red",ylim=c(0,15), pch=19)
+points(prediction4[,3],col="blue", pch=19)
+points(prediction4[,1],col="blue", pch=19)
+title("Alcali from reflectance prediction")
+for(i in 1:n){
+  segments(i,prediction4[i,1],i,prediction4[i,3])
+}
+```
+
+
+
+
